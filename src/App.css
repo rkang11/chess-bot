@@ -1,0 +1,56 @@
+.app {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #f5f5f5;
+  padding: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 44px);
+}
+
+.board-wrapper {
+  width: min(98vw, calc(100vh - 115px), 850px);
+  aspect-ratio: 1 / 1;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.status {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+button {
+  padding: 10px 18px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #222;
+  color: white;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+select {
+  padding: 8px 10px;
+  font-size: 15px;
+  border-radius: 6px;
+}
+
+.model-status {
+  margin: 0;
+  font-size: 14px;
+  color: #444;
+}
