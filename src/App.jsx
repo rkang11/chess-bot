@@ -10,43 +10,64 @@ function App() {
   const [status, setStatus] = useState("Your move. You are White.");
   const [thinking, setThinking] = useState(false);
   const [botDepth, setBotDepth] = useState(2);
+
   const [modelReady, setModelReady] = useState(false);
-  const [modelStatus, setModelStatus] = useState("");
+  const [modelStatus, setModelStatus] = useState("Loading ML model...");
   const [useML, setUseML] = useState(true);
+
+  const [colorChoice, setColorChoice] = useState("white");
+  const [playerColor, setPlayerColor] = useState("w");
 
   useEffect(() => {
     async function loadModel() {
       try {
         await loadEvalModel();
         setModelReady(true);
+        setModelStatus("ML model loaded.");
       } catch (error) {
         console.error("Model failed to load:", error);
         setModelReady(false);
         setUseML(false);
+        setModelStatus(`ML model failed: ${error.message}`);
       }
     }
 
     loadModel();
   }, []);
 
-  function getStatus(currentGame) {
+  function colorName(color) {
+    return color === "w" ? "White" : "Black";
+  }
+
+  function getActualColor(choice) {
+    if (choice === "random") {
+      return Math.random() < 0.5 ? "w" : "b";
+    }
+
+    return choice === "white" ? "w" : "b";
+  }
+
+  function getStatus(currentGame, currentPlayerColor = playerColor) {
     if (currentGame.isCheckmate()) {
-      return currentGame.turn() === "w"
-        ? "Checkmate. Black wins."
-        : "Checkmate. White wins.";
+      const winner = currentGame.turn() === "w" ? "Black" : "White";
+      return `Checkmate. ${winner} wins.`;
     }
 
     if (currentGame.isDraw()) {
       return "Draw.";
     }
 
+    const turnColor = currentGame.turn();
+
     if (currentGame.isCheck()) {
-      return currentGame.turn() === "w"
-        ? "White is in check."
-        : "Black is in check.";
+      return `${colorName(turnColor)} is in check.`;
     }
 
-    return currentGame.turn() === "w" ? "White to move." : "Black to move.";
+    if (turnColor === currentPlayerColor) {
+      return `Your move. You are ${colorName(currentPlayerColor)}.`;
+    }
+
+    return `Bot to move. You are ${colorName(currentPlayerColor)}.`;
   }
 
   function makeBotMove(currentGame) {
@@ -70,11 +91,32 @@ function App() {
     }, 100);
   }
 
+  function startNewGame(choice = colorChoice) {
+    const actualColor = getActualColor(choice);
+    const newGame = new Chess();
+
+    setColorChoice(choice);
+    setPlayerColor(actualColor);
+    setGame(newGame);
+    setThinking(false);
+
+    setStatus(`New game. You are ${colorName(actualColor)}.`);
+
+    // If user is Black, bot plays White immediately.
+    if (actualColor === "b") {
+      setTimeout(() => {
+        makeBotMove(newGame);
+      }, 200);
+    }
+  }
+
   function onDrop({ sourceSquare, targetSquare }) {
     if (!sourceSquare || !targetSquare) return false;
     if (game.isGameOver()) return false;
-    if (game.turn() !== "w") return false;
     if (thinking) return false;
+
+    // Only allow the user to move when it is their turn.
+    if (game.turn() !== playerColor) return false;
 
     const gameCopy = new Chess(game.fen());
 
@@ -103,10 +145,11 @@ function App() {
   }
 
   function resetGame() {
-    const newGame = new Chess();
-    setGame(newGame);
-    setStatus("Your move. You are White.");
-    setThinking(false);
+    startNewGame(colorChoice);
+  }
+
+  function handleColorChoiceChange(event) {
+    startNewGame(event.target.value);
   }
 
   return (
@@ -117,7 +160,7 @@ function App() {
         <Chessboard
           options={{
             position: game.fen(),
-            boardOrientation: "white",
+            boardOrientation: playerColor === "w" ? "white" : "black",
             onPieceDrop: onDrop,
           }}
         />
@@ -127,6 +170,19 @@ function App() {
       <p className="model-status">{modelStatus}</p>
 
       <div className="controls">
+        <label>
+          Play as:{" "}
+          <select
+            value={colorChoice}
+            disabled={thinking}
+            onChange={handleColorChoiceChange}
+          >
+            <option value="white">White</option>
+            <option value="black">Black</option>
+            <option value="random">Random</option>
+          </select>
+        </label>
+
         <label>
           Difficulty:{" "}
           <select
@@ -148,10 +204,13 @@ function App() {
             onChange={(event) => setUseML(event.target.value === "ml")}
           >
             <option value="ml">ML evaluator</option>
+            <option value="handcrafted">Handcrafted evaluator</option>
           </select>
         </label>
 
-        <button onClick={resetGame}>Reset Game</button>
+        <button onClick={resetGame} disabled={thinking}>
+          Reset Game
+        </button>
       </div>
     </div>
   );
