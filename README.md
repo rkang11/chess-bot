@@ -7,7 +7,7 @@ This is browser-based chess bot built with React, `chess.js`, alpha-beta search,
 The site is available at:
 
 ```text
-https://https://rkang11.github.io/.github.io/chess-bot/
+https://rkang11.github.io/chess-bot/
 ```
 
 ## Project Description
