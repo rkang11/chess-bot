@@ -20,12 +20,12 @@ The bot uses a trained ML evaluation model exported from Colab (found at chess-b
 
 ## Tech Stack
 
-React
-Vite
-chess.js
-react-chessboard
-Python
-TensorFlow/Keras
-Stockfish
-Google Colab
+React, 
+Vite, 
+chess.js, 
+react-chessboard, 
+Python, 
+TensorFlow/Keras, 
+Stockfish, 
+Google Colab, 
 GitHub Pages
